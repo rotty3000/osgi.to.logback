@@ -49,10 +49,13 @@ Of course adding Logback does not magically result in all logs funnelling into t
 
 ```xml
 <!--
-	currently only available as source or ibuild
-	http://download.eclipse.org/eclipse/updates/4.8-I-builds/I20180411-2000/plugins/org.eclipse.osgi_3.13.0.v20180409-1500.jar
+A compatible Equinox is currently only available as source or ibuild
 
-	After release it will be as follows.
+I-Builds: http://download.eclipse.org/eclipse/updates/4.8-I-builds/
+
+As of today: http://download.eclipse.org/eclipse/updates/4.8-I-builds/I20180411-2000/plugins/org.eclipse.osgi_3.13.0.v20180409-1500.jar
+
+After release it will be as follows.
 -->
 <dependency>
     <groupId>org.eclipse.platform</groupId>
