@@ -171,8 +171,60 @@ Consider the following `logback.xml` example:
 </configuration>
 ```
 
+### Example BNDRUNs
+
+The following are complete examples of [`bndrun`](http://bnd.bndtools.org/chapters/300-launching.html) files.
+
+#### Standard
+
+The **standard** approach is to install the bundles into the OSGi runtime:
+
+```properties
+-runrequires: \
+	osgi.identity;filter:='(osgi.identity=osgi.to.logback)'
+
+## Requiring only `osgi.to.logback` _should_ resolve these other bundles
+-runbundles: \
+	ch.qos.logback.classic;version='[1.2.3,1.2.4)',\
+	ch.qos.logback.core;version='[1.2.3,1.2.4)',\
+	slf4j.api;version='[1.7.25,1.7.26)',\
+	osgi.to.logback;version='[0.1.0,0.1.1)',\
+	...
+
+-runproperties: \
+	logback.configurationFile=file:${.}/logback.xml
+```
+
+_**Note**_ that the `-runbundles` directive is ordered. Therefore it's probably reasonable to place these bundles at the head of the list if only to start capturing logs as early as possible.
+
+#### LOG EVERYTHING
+
+The **log everything** approach is intended to integrate with the framework as early as possible to capture all activities without resorting to the log cache or being concerned with missed logs due to start ordering (this is only tested currently on Eclipse equinox):
+
+```properties
+-runpath: \
+	ch.qos.logback.classic;version='[1.2.3,1.2.4)',\
+	ch.qos.logback.core;version='[1.2.3,1.2.4)',\
+	slf4j.api;version='[1.7.25,1.7.26)',\
+	osgi.to.logback;version='[0.1.0,0.1.1)'
+-runsystempackages: \
+	org.slf4j;version=1.7.25,\
+	org.slf4j.helpers;version=1.7.25,\
+	org.slf4j.spi;version=1.7.25
+
+-runproperties: \
+	logback.configurationFile=file:${.}/logback.xml
+```
+
+
+
+_**Note**_ that there are no `-runrequires` for the dependent bundles in this mode.
+
+_**Note**_ that for or a production runtime, you can specify the system property `-Dlogback.configurationFile=file:../logback.xml` (which overrides what is captured in the bndrun/executable) to point to a config file somewhere in the production system.
+
 ### Asserted Notes
 
 - **osgi-to-logback** supports Logback's [automatic reloading](https://logback.qos.ch/manual/configuration.html#autoScan) upon file modification
-- when using **equinox** framework one may want to disable it's own internal appenders using the system property `eclipse.log.enabled=false`
+- When using **equinox** framework one may want to disable it's own internal appenders using the system property `eclipse.log.enabled=false`
+- A caveat of `Events.Bundle`, `Events.Framework` & `Events.Service` is that they must first be set to an effecrive level before the sub loggers will output records. It's because the integration is not deeply integration for these logger names. A change would have to occur at the framework level to make that possible.
 
