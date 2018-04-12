@@ -45,10 +45,15 @@ Logback offers many features from it's configuration file so make sure to look t
 
 ### Unified Backend
 
-Of course adding Logback does not magically result in all logs funnelling into the same appenders, particularly the OSGi logs. To begin you need an implementation of the OSGi Log 1.4 specification (currently only equinox supports as it is the Log Specification RI):
+Of course adding Logback does not magically result in all logs funnelling into the same appenders, particularly the OSGi logs. To begin you need an implementation of the OSGi Log 1.4 specification (currently only equinox supports it, as it is the RI):
 
 ```xml
-<!-- currently only available as source or ibuild -->
+<!--
+	currently only available as source or ibuild
+	http://download.eclipse.org/eclipse/updates/4.8-I-builds/I20180411-2000/plugins/org.eclipse.osgi_3.13.0.v20180409-1500.jar
+
+	After release it will be as follows.
+-->
 <dependency>
     <groupId>org.eclipse.platform</groupId>
     <artifactId>org.eclipse.osgi</artifactId>
