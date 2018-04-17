@@ -15,7 +15,7 @@ apply plugin: 'eclipse'
 apply plugin: 'maven'
 
 group = 'com.github.rotty3000'
-version = '0.1.0'
+version = '0.2.0'
 
 repositories {
 	mavenLocal()

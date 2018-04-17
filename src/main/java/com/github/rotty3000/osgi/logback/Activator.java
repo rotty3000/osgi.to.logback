@@ -1,5 +1,7 @@
 package com.github.rotty3000.osgi.logback;
 
+import java.util.AbstractMap.SimpleEntry;
+
 import org.osgi.annotation.bundle.Header;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
@@ -7,51 +9,88 @@ import org.osgi.framework.Constants;
 import org.osgi.framework.ServiceReference;
 import org.osgi.service.log.LogReaderService;
 import org.osgi.service.log.admin.LoggerAdmin;
+import org.osgi.util.tracker.ServiceTracker;
 
 @Header(name = Constants.BUNDLE_ACTIVATOR, value = "${@class}")
 public class Activator implements BundleActivator {
 
-	private volatile LogbackLogListener logbackLogListener;
+	private volatile ServiceTracker<LoggerAdmin, LRST> lat;
 
 	@Override
 	public void start(BundleContext bundleContext) throws Exception {
-		ServiceReference<LoggerAdmin> laSR =
-			bundleContext.getServiceReference(LoggerAdmin.class);
+		lat = new ServiceTracker<LoggerAdmin, LRST>(
+			bundleContext, LoggerAdmin.class, null) {
 
-		if (laSR == null) {
-			return;
-		}
+			@Override
+			public LRST addingService(
+				ServiceReference<LoggerAdmin> reference) {
 
-		ServiceReference<LogReaderService> lrsSR =
-			bundleContext.getServiceReference(LogReaderService.class);
+				LoggerAdmin loggerAdmin = bundleContext.getService(reference);
 
-		if (lrsSR == null) {
-			return;
-		}
+				LRST lrst = new LRST(bundleContext, loggerAdmin);
 
-		LoggerAdmin loggerAdmin = bundleContext.getService(laSR);
-		LogReaderService logReaderService = bundleContext.getService(lrsSR);
+				lrst.open();
 
-		logbackLogListener = new LogbackLogListener(loggerAdmin);
-		logReaderService.addLogListener(logbackLogListener);
+				return lrst;
+			}
+
+			@Override
+			public void removedService(
+				ServiceReference<LoggerAdmin> reference, LRST lrst) {
+
+				lrst.close();
+			}
+		};
+
+		lat.open();
 	}
 
 	@Override
 	public void stop(BundleContext bundleContext) throws Exception {
-		if (logbackLogListener == null) {
-			return;
+		lat.close();
+	}
+
+	class LRST extends ServiceTracker<LogReaderService, Pair> {
+
+		public LRST(BundleContext context, LoggerAdmin loggerAdmin) {
+			super(context, LogReaderService.class, null);
+
+			this.loggerAdmin = loggerAdmin;
 		}
 
-		ServiceReference<LogReaderService> lrsSR =
-			bundleContext.getServiceReference(LogReaderService.class);
+		@Override
+		public Pair addingService(
+			ServiceReference<LogReaderService> reference) {
 
-		if (lrsSR == null) {
-			return;
+			LogReaderService logReaderService = context.getService(reference);
+
+			LogbackLogListener logbackLogListener = new LogbackLogListener(loggerAdmin);
+
+			logReaderService.addLogListener(logbackLogListener);
+
+			return new Pair(logReaderService, logbackLogListener);
 		}
 
-		LogReaderService logReaderService = bundleContext.getService(lrsSR);
+		@Override
+		public void removedService(
+			ServiceReference<LogReaderService> reference,
+			Pair pair) {
 
-		logReaderService.removeLogListener(logbackLogListener);
+			pair.getKey().removeLogListener(pair.getValue());
+		}
+
+		private final LoggerAdmin loggerAdmin;
+
+	}
+
+	class Pair extends SimpleEntry<LogReaderService, LogbackLogListener> {
+
+		private static final long serialVersionUID = 1L;
+
+		public Pair(LogReaderService logReaderService, LogbackLogListener logbackLogListener) {
+			super(logReaderService, logbackLogListener);
+		}
+
 	}
 
 }
