@@ -7,6 +7,8 @@ This project is intended to help simplify the logging story for OSGi by leveragi
 1. all logging is configured in one place
 2. all log records are appended together (or at least all appenders are setup in one place)
 
+The [LICENSE is Apache License Version 2.0](./LICENSE).
+
 ### Depedencies
 
 Add Logback to an OSGi framework by adding the following bundles:
@@ -35,7 +37,7 @@ This provides `slf4j` logging API over the Logback backend.
 
 Configuring logback is most easily handled by setting the system property `logback.configurationFile` to point to a file on the file system.
 
-An example using a bndrun file looks like 
+An example using a bndrun file looks like
 
 `-runproperties: logback.configurationFile=file:${.}/logback.xml`
 
@@ -64,7 +66,7 @@ After release it will be as follows.
 </dependency>
 ```
 
-Next install **osgi-to-logback** which sends all OSGi Log events directly to Logback and helps integrate Logback configuration via [`LoggerAdmin`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.log.html#d0e2442): 
+Next install **osgi-to-logback** which sends all OSGi Log events directly to Logback and helps integrate Logback configuration via [`LoggerAdmin`](https://osgi.org/specification/osgi.cmpn/7.0.0/service.log.html#d0e2442):
 
 ```xml
 <!-- TODO release osgi-to-log -->
@@ -135,13 +137,13 @@ The OSGi Log specification describes events resulting in log records. Log 1.4 de
 | Service event   | `Events.Service`   | `REGISTERED` - ServiceEvent REGISTERED<br /> `MODIFIED` - ServiceEvent MODIFIED<br /> `UNREGISTERING` - ServiceEvent UNREGISTERING |
 | Framework event | `Events.Framework` | `STARTED` - FrameworkEvent STARTED<br />`ERROR` - FrameworkEvent ERROR<br />`PACKAGES_REFRESHED` - FrameworkEvent PACKAGES REFRESHED<br />`STARTLEVEL_CHANGED` - FrameworkEvent STARTLEVEL CHANGED<br />`WARNING` - FrameworkEvent WARNING<br />`INFO` - FrameworkEvent INFO |
 
-In order to control the granularity of the logging associated with these events, **osgi-to-logback** appends a period (`.`) and the `Bundle-SymbolicName` of the originating bundle. 
+In order to control the granularity of the logging associated with these events, **osgi-to-logback** appends a period (`.`) and the `Bundle-SymbolicName` of the originating bundle.
 
 Consider the following `logback.xml` example:
 
 ```xml
 <configuration>
-    
+
 	<!-- reset JUL log levels and set Logback as the backend -->
 	<contextListener class="ch.qos.logback.classic.jul.LevelChangePropagator">
 		<resetJUL>true</resetJUL>
@@ -157,17 +159,17 @@ Consider the following `logback.xml` example:
     <!-- globaly set bundle & framework events to WARN -->
 	<logger name="Events.Bundle" level="WARN"/>
 	<logger name="Events.Framework" level="WARN"/>
-    
+
     <!-- globally set service events to INFO -->
 	<logger name="Events.Service" level="INFO"/>
-    
+
     <!-- exclude service events from the equinox framework, just because -->
 	<logger name="Events.Service.org.eclipse.osgi" level="WARN"/>
-    
+
     <!-- ignore one particularly bundle using the old LogService API -->
 	<logger name="LogService.org.baz" level="OFF"/>
 
-    <!-- the rest are typical logger names associated with the uses of the various 
+    <!-- the rest are typical logger names associated with the uses of the various
          logger API calls -->
 	<logger name="org.my.foo" level="DEBUG"/>
 	<logger name="org.eclipse" level="ERROR"/>
